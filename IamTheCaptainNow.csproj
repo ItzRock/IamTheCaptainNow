@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <HasteDir Condition=" '$(HasteDir)' == '' ">C:\Program Files (x86)\Steam\steamapps\common\Haste</HasteDir>
+
+    <!-- We are referencing mscorlib/netstandard/etc. in the game, so disable the system framework refs -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- Do not generate .deps.json file (it is not needed) -->
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <!-- Do not generate .pdb (debugging symbols) - you could ship this with your mod if you want, up to you -->
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+    <Reference Include="$(HasteDir)\Haste_Data\Managed\*.dll" Private="false" Publicize="true"/>
+    <!-- Using Day's HarmonyX here because I literally cannot test my stuff without UnityExplorer.-->
+    <Reference Include="C:\Program Files (x86)\Steam\steamapps\workshop\content\1796470\3408901301\*.dll" Private="false"/>
+  </ItemGroup>
+
+</Project>
