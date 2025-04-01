@@ -5,6 +5,7 @@ using Zorro.Settings;
 using Landfall.Modding;
 using System.Reflection;
 using UnityEngine.Localization;
+using Landfall.Haste;
 namespace IamTheCaptainNow;
 
 [LandfallPlugin]
@@ -129,7 +130,7 @@ public class ModelSwapSetting : OffOnSetting, IExposedSetting {
         return OffOnMode.ON;
     }
 
-    public LocalizedString GetDisplayName() => new("CaptainAntStai", "settingName");
+    public LocalizedString GetDisplayName() => new UnlocalizedString("Enable Captain Model?");
 
     // Token: 0x0600062B RID: 1579 RVA: 0x00024CEC File Offset: 0x00022EEC
     public override List<LocalizedString> GetLocalizedChoices() {
