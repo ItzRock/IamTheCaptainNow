@@ -14,6 +14,8 @@ public class CaptainModelSwap {
     public static string GUID = "AnthonyStai.IamTheCaptainNow";
     public static GameObject prefab;
     public static bool Enabled = true;
+    public static bool Dust = true;
+    public static GameObject currentClone;
     public static string AssemblyDirectory {
         get {
             string codeBase = Assembly.GetExecutingAssembly().CodeBase;
@@ -49,13 +51,14 @@ public class PlayerPatches {
     private static void AwakePostFix(PlayerAnimationHandler __instance) {
         if (!CaptainModelSwap.Enabled) return;
         GameObject clone = GameObject.Instantiate(CaptainModelSwap.prefab);
+        CaptainModelSwap.currentClone = clone;
         clone.transform.parent = __instance.gameObject.transform.Find("Visual/");
         clone.transform.localPosition = Vector3.zero;
         clone.transform.localEulerAngles = Vector3.zero;
         __instance.GetComponent<PlayerCharacter>().refs.playerModel = clone.transform;
         __instance.GetComponent<PlayerCharacter>().refs.handLeft = clone.transform.Find("Captain/Armature/Hip/Spine_1/Spine_2/Spine_3/Shoulder_L/Arm_L/Elbow_L/Hand_L");
         __instance.GetComponent<PlayerCharacter>().refs.handRight = clone.transform.Find("Captain/Armature/Hip/Spine_1/Spine_2/Spine_3/Shoulder_R/Arm_R/Elbow_R/Hand_R");
-
+        clone.transform.Find("Captain/Dust").gameObject.SetActive(CaptainModelSwap.Dust);
         PlayerStatusSFX sfx = __instance.GetComponent<PlayerStatusSFX>();
         sfx.boostStepRef = clone.transform.Find("Captain/SFX/Steps/StepSFX_2");
         sfx.boostJumpRef = clone.transform.Find("Captain/SFX/Jumps/Jump_Mini");
@@ -71,6 +74,20 @@ public class PlayerPatches {
     private static bool UpdatePrefix(PlayerAnimationHandler __instance) {
         if (__instance.animator == null && CaptainModelSwap.Enabled) __instance.animator = __instance.transform.Find("Visual/CaptainModel(Clone)/Captain").GetComponent<Animator>();
         return true;
+    }
+}
+[HarmonyPatch(typeof(PlayerMovement))]
+public class PlayerMovementPatches {
+    [HarmonyPatch(nameof(PlayerMovement.Land))]
+    [HarmonyPostfix]
+    private static void LandPostfix(PlayerAnimationHandler __instance) {
+        if (CaptainModelSwap.currentClone != null && CaptainModelSwap.Enabled && CaptainModelSwap.Dust) CaptainModelSwap.currentClone.transform.Find("Captain/Dust").gameObject.SetActive(true);
+    }
+
+    [HarmonyPatch(nameof(PlayerMovement.AirMovement))]
+    [HarmonyPostfix]
+    private static void AirMovementPostfix(PlayerAnimationHandler __instance) {
+        if (CaptainModelSwap.currentClone != null && CaptainModelSwap.Enabled && CaptainModelSwap.Dust) CaptainModelSwap.currentClone.transform.Find("Captain/Dust").gameObject.SetActive(false);
     }
 }
 
@@ -131,6 +148,31 @@ public class ModelSwapSetting : OffOnSetting, IExposedSetting {
     }
 
     public LocalizedString GetDisplayName() => new UnlocalizedString("Enable Captain Model?");
+
+    // Token: 0x0600062B RID: 1579 RVA: 0x00024CEC File Offset: 0x00022EEC
+    public override List<LocalizedString> GetLocalizedChoices() {
+        return new List<LocalizedString>
+        {
+            new LocalizedString("Settings", "DisabledGraphicOption"),
+            new LocalizedString("Settings", "EnabledGraphicOption")
+        };
+    }
+}
+
+[HasteSetting]
+public class CaptainDust : OffOnSetting, IExposedSetting {
+    public override void ApplyValue() {
+        CaptainModelSwap.Dust = base.Value == OffOnMode.ON;
+    }
+
+    public string GetCategory() => "Mods";
+
+    // Token: 0x0600062A RID: 1578 RVA: 0x00024CD8 File Offset: 0x00022ED8
+    public override OffOnMode GetDefaultValue() {
+        return OffOnMode.ON;
+    }
+
+    public LocalizedString GetDisplayName() => new UnlocalizedString("Enable Captain Dust Trail?");
 
     // Token: 0x0600062B RID: 1579 RVA: 0x00024CEC File Offset: 0x00022EEC
     public override List<LocalizedString> GetLocalizedChoices() {
